@@ -25,14 +25,14 @@ class SyncTracker(nvsRef: ActorRef,
   import History._
   import scorex.core.utils.TimeProvider.Time
 
-  private var schedule: Option[Cancellable] = None
+  protected var schedule: Option[Cancellable] = None
 
-  private val statuses = mutable.Map[ConnectedPeer, HistoryComparisonResult]()
-  private val lastSyncSentTime = mutable.Map[ConnectedPeer, Time]()
+  protected val statuses = mutable.Map[ConnectedPeer, HistoryComparisonResult]()
+  protected val lastSyncSentTime = mutable.Map[ConnectedPeer, Time]()
 
-  private var lastSyncInfoSentTime: Time = 0L
+  protected var lastSyncInfoSentTime: Time = 0L
 
-  private var stableSyncRegime = false
+  protected var stableSyncRegime = false
 
   def scheduleSendSyncInfo(): Unit = {
     schedule foreach {
@@ -50,6 +50,13 @@ class SyncTracker(nvsRef: ActorRef,
   def minInterval(): FiniteDuration =
     if (stableSyncRegime) networkSettings.syncIntervalStable
     else networkSettings.syncInterval
+
+  /**
+    * Get synchronization status for given connected peer
+    */
+  def getStatus(peer: ConnectedPeer): Option[HistoryComparisonResult] = {
+    statuses.get(peer)
+  }
 
   def updateStatus(peer: ConnectedPeer, status: HistoryComparisonResult): Unit = {
     val seniorsBefore = numOfSeniors()
